@@ -355,47 +355,30 @@
         <p id="rfbmBouquetMessage" role="status"></p>
 
     </div>
+
     </div>
-    
+
     <div id="playlistCategoryView">
 
         <h3 class="playlist-navigation-title">
-            Playlists
+        Playlists
         </h3>
 
-        <div id="playlistCategoryButtons"
-             class="playlist-category-buttons"></div>
-
-    </div>
-    
-    <div id="playlistChoicesView" style="display:none;">
-
-        <button id="playlistBackToCategories"
-                type="button"
-                class="playlist-nav-back">
-            <i class="fas fa-arrow-left"></i>
-            Back
-        </button>
-
-        <h3 id="playlistCategoryHeading"
-            class="playlist-navigation-title"></h3>
-            
-                
     <div class="rfbm-search-box">
 
         <i class="fas fa-search" aria-hidden="true"></i>
 
         <input
-            type="search"
-            id="rfbmCategorySearch"
-            placeholder="Search artists or tracks..."
+            type="text"
+            id="rfbmGlobalSearch"
+            placeholder="Search categories, artists, playlists or songs..."
             autocomplete="off"
-            aria-label="Search artists or tracks"
+            aria-label="Search all categories and songs"
         >
 
         <button
             type="button"
-            id="rfbmCategorySearchClear"
+            id="rfbmGlobalSearchClear"
             aria-label="Clear search"
             title="Clear search"
         >
@@ -403,35 +386,80 @@
         </button>
 
     </div>
-                
-    <div id="playlistChoices"
-         class="playlist-choices"></div>
+
+    <div id="rfbmGlobalSearchResults"></div>
+
+    <div id="playlistCategoryButtons"
+         class="playlist-category-buttons"></div>
 
     </div>
-    
-    <div id="playlistTracksView" style="display:none;">
 
-        <button id="playlistBackToChoices"
-                type="button"
-                class="playlist-nav-back">
-            <i class="fas fa-arrow-left"></i>
-            Back to playlists
+    <div id="playlistChoicesView" style="display:none;">
+
+        <button id="playlistBackToCategories"
+            type="button"
+            class="playlist-nav-back">
+
+        <i class="fas fa-arrow-left"></i>
+            Back
+
         </button>
 
-        <h3 id="playlistTracksHeading"
+        <h3 id="playlistCategoryHeading"
             class="playlist-navigation-title"></h3>
-            
-            
+
     <div class="rfbm-search-box">
 
         <i class="fas fa-search" aria-hidden="true"></i>
 
         <input
-            type="search"
+            type="text"
+            id="rfbmPlaylistSearch"
+            placeholder="Search playlists..."
+            autocomplete="off"
+            aria-label="Search playlists in this category"
+        >
+
+        <button
+            type="button"
+            id="rfbmPlaylistSearchClear"
+            aria-label="Clear search"
+            title="Clear search"
+        >
+            &times;
+        </button>
+
+    </div>
+
+    <div id="playlistChoices"
+         class="playlist-choices"></div>
+
+    </div>
+
+    <div id="playlistTracksView" style="display:none;">
+
+        <button id="playlistBackToChoices"
+            type="button"
+            class="playlist-nav-back">
+
+        <i class="fas fa-arrow-left"></i>
+            Back to playlists
+
+        </button>
+
+        <h3 id="playlistTracksHeading"
+            class="playlist-navigation-title"></h3>
+
+    <div class="rfbm-search-box">
+
+        <i class="fas fa-search" aria-hidden="true"></i>
+
+        <input
+            type="text"
             id="rfbmTrackSearch"
             placeholder="Search for a song or artist..."
             autocomplete="off"
-            aria-label="Search songs or artists"
+            aria-label="Search songs or artists in this playlist"
         >
 
         <button
@@ -443,22 +471,22 @@
             &times;
         </button>
 
-    </div>    
-            
-        <div class="playlist-list" id="playlistList"></div>
+    </div>
+
+    <div class="playlist-list" id="playlistList"></div>
 
     </div>
     
     <select id="playlistArtistSelect" style="display:none;"></select>
 
-</div>
+    </div>
 
-</div>
+    </div>
 
-<div
-    id="toast"
-    class="toast">
-</div>
+    <div
+        id="toast"
+        class="toast">
+    </div>
 
 </body>
 </html>
