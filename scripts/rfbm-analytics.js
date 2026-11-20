@@ -90,106 +90,72 @@
        CURRENT PLAYLIST AND TRACK
        ----------------------------------------------------- */
 
-    function getCurrentTrackInfo() {
+    
+function getCurrentTrackInfo() {
 
-        let playlist = [];
-        let trackIndex = 0;
-        let track = null;
+    let state = {};
 
-        try {
+    try {
 
-            if (typeof currentPlaylist !== "undefined") {
-                playlist = currentPlaylist;
-            }
-
-            if (typeof currentTrack !== "undefined") {
-                trackIndex = currentTrack;
-            }
-
-            track = playlist[trackIndex] || null;
-
-        } catch (error) {
-            track = null;
+        if (
+            typeof window.RfbMPlaylistState === "function"
+        ) {
+            state = window.RfbMPlaylistState() || {};
         }
 
-
-        const title =
-            track?.title ||
-            track?.name ||
-            track?.track ||
-            document.querySelector("#playlistTitle")?.textContent?.trim() ||
-            "Unknown track";
-
-
-        let artist =
-            track?.artist ||
-            track?.Artist ||
-            "";
-
-        try {
-
-            if (
-                !artist &&
-                typeof currentArtist !== "undefined"
-            ) {
-                artist = currentArtist;
-            }
-
-        } catch (error) {
-            artist = "";
-        }
-
-
-        let playlistName = "";
-
-        try {
-
-            if (
-                typeof currentPlaylistName !== "undefined"
-            ) {
-                playlistName = currentPlaylistName;
-            }
-
-        } catch (error) {
-            playlistName = "";
-        }
-
-
-        if (!playlistName) {
-
-            playlistName =
-                track?.playlist ||
-                track?.category ||
-                "RfbM Playlists";
-        }
-
-
-        const source =
-            track?.src ||
-            track?.url ||
-            audio?.currentSrc ||
-            audio?.src ||
-            "";
-
-
-        return {
-
-            playlist_name: String(playlistName).slice(0, 200),
-
-            track_title: String(title).slice(0, 200),
-
-            artist_name: String(artist).slice(0, 200),
-
-            signature: [
-                playlistName,
-                title,
-                artist,
-                source
-            ].join("|")
-
-        };
+    } catch (error) {
+        state = {};
     }
 
+
+    const playlist =
+        Array.isArray(state.playlist)
+            ? state.playlist
+            : [];
+
+    const track =
+        playlist[state.trackIndex] || null;
+
+
+    const title =
+        track?.title ||
+        track?.name ||
+        track?.track ||
+        document.querySelector("#playlistTitle")?.textContent?.trim() ||
+        "Unknown track";
+
+
+    const artist =
+        state.artist ||
+        track?.artist ||
+        track?.Artist ||
+        "";
+
+
+    const source =
+        track?.src ||
+        track?.url ||
+        audio?.currentSrc ||
+        audio?.src ||
+        "";
+
+
+    return {
+
+        playlist_name: "RfbM Playlists",
+
+        track_title: String(title).slice(0, 200),
+
+        artist_name: String(artist).slice(0, 200),
+
+        signature: [
+            title,
+            artist,
+            source
+        ].join("|")
+
+    };
+}
 
     /* -----------------------------------------------------
        SESSION STORAGE
