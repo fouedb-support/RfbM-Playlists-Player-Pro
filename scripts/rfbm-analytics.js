@@ -264,146 +264,210 @@
         throw new Error("Secure UUID generation unavailable.");
     }
 
+   
+/* -----------------------------------------------------
+   TURNSTILE INITIALIZATION
+   ----------------------------------------------------- */
 
-    /* -----------------------------------------------------
-       TURNSTILE INITIALIZATION
-       ----------------------------------------------------- */
-
-    function initializeTurnstile() {
-
-        return new Promise(function (resolve, reject) {
-
-            let attempts = 0;
-
-            const checkTurnstile = setInterval(function () {
-
-                attempts++;
-
-                if (
-                    window.turnstile &&
-                    typeof window.turnstile.render === "function"
-                ) {
-
-                    clearInterval(checkTurnstile);
-
-                    try {
-
-                        const container =
-                            document.createElement("div");
-
-                        container.id = "rfbm-turnstile-container";
-
-                        container.style.position = "fixed";
-                        container.style.left = "-10000px";
-                        container.style.top = "0";
-
-                        document.body.appendChild(container);
+let turnstileInitPromise = null;
+let pendingTurnstileRequest = null;
 
 
-                        turnstileWidget =
-                            window.turnstile.render(
-                                container,
-                                {
-                                    sitekey: CONFIG.turnstileSiteKey,
+function initializeTurnstile() {
 
-                                    action: "rfbm_start",
+    if (turnstileReady) {
+        return Promise.resolve();
+    }
 
-                                    size: "invisible",
+    if (turnstileInitPromise) {
+        return turnstileInitPromise;
+    }
 
-                                    execution: "execute",
 
-                                    callback: function (token) {
+    turnstileInitPromise = new Promise(function (resolve, reject) {
 
-                                        if (token) {
-                                            resolve(token);
-                                        } else {
-                                            reject(
-                                                new Error("Turnstile returned an empty token.")
-                                            );
-                                        }
-                                    },
+        let attempts = 0;
 
-                                    "error-callback": function () {
+        const checkTurnstile = setInterval(function () {
 
-                                        reject(
+            attempts++;
+
+            if (
+                window.turnstile &&
+                typeof window.turnstile.render === "function"
+            ) {
+
+                clearInterval(checkTurnstile);
+
+                try {
+
+                    const container =
+                        document.createElement("div");
+
+                    container.id =
+                        "rfbm-turnstile-container";
+
+                    container.style.position = "fixed";
+                    container.style.left = "-10000px";
+                    container.style.top = "0";
+
+                    document.body.appendChild(container);
+
+
+                    turnstileWidget =
+                        window.turnstile.render(
+                            container,
+                            {
+                                sitekey: CONFIG.turnstileSiteKey,
+
+                                action: "rfbm_start",
+
+                                size: "invisible",
+
+                                execution: "execute",
+
+                                callback: function (token) {
+
+                                    if (
+                                        pendingTurnstileRequest &&
+                                        token
+                                    ) {
+
+                                        const request =
+                                            pendingTurnstileRequest;
+
+                                        pendingTurnstileRequest = null;
+
+                                        clearTimeout(request.timeout);
+
+                                        request.resolve(token);
+                                    }
+                                },
+
+                                "error-callback": function () {
+
+                                    if (pendingTurnstileRequest) {
+
+                                        const request =
+                                            pendingTurnstileRequest;
+
+                                        pendingTurnstileRequest = null;
+
+                                        clearTimeout(request.timeout);
+
+                                        request.reject(
                                             new Error("Turnstile verification failed.")
                                         );
-                                    },
+                                    }
+                                },
 
-                                    "expired-callback": function () {
+                                "expired-callback": function () {
 
-                                        reject(
+                                    if (pendingTurnstileRequest) {
+
+                                        const request =
+                                            pendingTurnstileRequest;
+
+                                        pendingTurnstileRequest = null;
+
+                                        clearTimeout(request.timeout);
+
+                                        request.reject(
                                             new Error("Turnstile token expired.")
                                         );
                                     }
                                 }
-                            );
+                            }
+                        );
 
-                        turnstileReady = true;
 
-                    } catch (error) {
+                    turnstileReady = true;
 
-                        reject(error);
-                    }
+                    resolve();
 
-                    return;
+                } catch (error) {
+
+                    turnstileInitPromise = null;
+
+                    reject(error);
                 }
 
-
-                if (attempts >= 200) {
-
-                    clearInterval(checkTurnstile);
-
-                    reject(
-                        new Error("Turnstile did not load.")
-                    );
-                }
-
-            }, 100);
-
-        });
-    }
-
-
-    async function getTurnstileToken() {
-
-        if (!turnstileReady) {
-            await initializeTurnstile();
-        }
-
-        return new Promise(function (resolve, reject) {
-
-            try {
-
-                window.turnstile.reset(turnstileWidget);
-
-                window.turnstile.execute(turnstileWidget);
-
-                const timeout = setTimeout(function () {
-
-                    reject(
-                        new Error("Turnstile verification timed out.")
-                    );
-
-                }, 30000);
-
-
-                const originalResolve = resolve;
-
-                resolve = function (token) {
-
-                    clearTimeout(timeout);
-                    originalResolve(token);
-                };
-
-            } catch (error) {
-
-                reject(error);
+                return;
             }
 
-        });
-    }
 
+            if (attempts >= 200) {
+
+                clearInterval(checkTurnstile);
+
+                turnstileInitPromise = null;
+
+                reject(
+                    new Error("Turnstile did not load.")
+                );
+            }
+
+        }, 100);
+
+    });
+
+
+    return turnstileInitPromise;
+}
+
+
+async function getTurnstileToken() {
+
+    await initializeTurnstile();
+
+
+    return new Promise(function (resolve, reject) {
+
+        if (pendingTurnstileRequest) {
+
+            reject(
+                new Error("A Turnstile request is already running.")
+            );
+
+            return;
+        }
+
+
+        const timeout = setTimeout(function () {
+
+            pendingTurnstileRequest = null;
+
+            reject(
+                new Error("Turnstile verification timed out.")
+            );
+
+        }, 30000);
+
+
+        pendingTurnstileRequest = {
+            resolve: resolve,
+            reject: reject,
+            timeout: timeout
+        };
+
+
+        try {
+
+            window.turnstile.reset(turnstileWidget);
+
+            window.turnstile.execute(turnstileWidget);
+
+        } catch (error) {
+
+            clearTimeout(timeout);
+
+            pendingTurnstileRequest = null;
+
+            reject(error);
+        }
+
+    });
+}
 
     /* -----------------------------------------------------
        SUPABASE REQUEST
