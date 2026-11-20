@@ -886,76 +886,68 @@ async function getTurnstileToken() {
     /* -----------------------------------------------------
        AUDIO INITIALIZATION
        ----------------------------------------------------- */
+    
+function initializeAnalytics() {
 
-    function initializeAnalytics() {
+    audio = window.RfbMPlaylistAudio || null;
 
-        try {
-
-            if (typeof playlistAudio === "undefined") {
-                return false;
-            }
-
-            audio = playlistAudio;
-
-        } catch (error) {
-
-            return false;
-        }
+    if (!audio) {
+        return false;
+    }
 
 
-        loadStoredSession();
+    loadStoredSession();
 
 
-        if (
-            audio.dataset.rfbmAnalyticsAttached === "true"
-        ) {
-            return true;
-        }
-
-        audio.dataset.rfbmAnalyticsAttached = "true";
-
-
-        audio.addEventListener(
-            "playing",
-            handlePlaying
-        );
-
-
-        audio.addEventListener(
-            "pause",
-            handlePause
-        );
-
-
-        audio.addEventListener(
-            "ended",
-            handleEnded
-        );
-
-
-        audio.addEventListener(
-            "waiting",
-            function () {
-                isActuallyPlaying = false;
-            }
-        );
-
-
-        audio.addEventListener(
-            "playing",
-            function () {
-                isActuallyPlaying = true;
-            }
-        );
-
-
-        console.info(
-            "RfbM Analytics : initialized."
-        );
-
+    if (
+        audio.dataset.rfbmAnalyticsAttached === "true"
+    ) {
         return true;
     }
 
+    audio.dataset.rfbmAnalyticsAttached = "true";
+
+
+    audio.addEventListener(
+        "playing",
+        handlePlaying
+    );
+
+
+    audio.addEventListener(
+        "pause",
+        handlePause
+    );
+
+
+    audio.addEventListener(
+        "ended",
+        handleEnded
+    );
+
+
+    audio.addEventListener(
+        "waiting",
+        function () {
+            isActuallyPlaying = false;
+        }
+    );
+
+
+    audio.addEventListener(
+        "playing",
+        function () {
+            isActuallyPlaying = true;
+        }
+    );
+
+
+    console.info(
+        "RfbM Analytics : initialized."
+    );
+
+    return true;
+}
 
     /* -----------------------------------------------------
        WAIT FOR THE PLAYER
